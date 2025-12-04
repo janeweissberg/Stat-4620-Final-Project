@@ -1,0 +1,7 @@
+---
+title: "Stat 4620 Final Project"
+author: "Group 10"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
