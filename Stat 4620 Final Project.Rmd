@@ -230,4 +230,40 @@ This motivates Ridge regression, LASSO, and Principal Components Regression as m
     * PCR (dimension reduction)
     * Regression splines or polynomial regression (nonlinearity)
     * Tree-based models (nonlinear interactions, no need for collinearity handling)
+    
+# Part II: Model Analysis
 
+## Motivation for the Model(s) Investigated
+
+* High Multicollinearity: Some of the predictors representing socioeconomic conditions
+like poverty, education, income, unemployment, and family structure are highly 
+correlated. Standard linear regression would not do well in this situation because it would suffer from having inflated variances of coefficient estimates as well as having difficulty in interpretation when predictors move together. These findings motivate using dimension-reduction approaches. 
+
+* Large Number of Predictors: Because we have so many correlated predictors, regularization methods like LASSO and Ridge are better suited for this. This is because we can prevent shrinkage and have variable selection.
+
+* Potential Nonlinearity: Some of the scatterplots showed curved relationships between predictors and violent crime. This means that using purely linear models might not be able to fully capture patterns, which means that we should look into using more flexible methods like splines or tree-based models.
+
+## Model Choices Motivated by EDA
+The models we should investigate are:
+1. Ridge Regression: It handles multicolinearity by shrinking the correlated coefficients together and it also reduces the prediction variance.
+2. LASSO Regression: It performs variable selection by shrinking some coefficients exactly to zero. This will result in a more sparse, which makes it more interpretable, model.
+
+## Mathematical Description of Model(s)
+
+* Ordinary Least Squares: This is the baseline, however OLS suffers from unstable estimates. This happens when predictors are correlated (like in our model), which is why we look at regularized models instead.
+
+$$
+\hat{\beta}_{\text{OLS}} = \arg\min_{\beta} \sum_{i=1}^n \left( y_i - \beta_0 - X_i^{\top}\beta \right)^2
+$$
+
+* Ridge Regression: Ridge Regression adds an $L_2$-penalty to shrink the coefficients to zero. There are no coefficients that are forced exactly to zero, rather it shrinks the correlated predictors toward each other. This stabilizes the model when the predictors are highly collinear.
+
+$$
+\hat{\beta}_{\text{ridge}} = \arg\min_{\beta} \left\{ \sum_{i=1}^n \left( y_i - \beta_0 - X_i^{\top}\beta \right)^2 + \lambda \sum_{j=1}^p \beta_j^2 \right\}
+$$
+
+* LASSO Regression: This adds an $L_1$-penalty, which allows for exact zero coefficients. It will also perform automatic variable selection and its useful when many predictors are weak. It will produce a sparse and much more interpretable model.
+
+$$
+\hat{\beta}_{\text{lasso}} = \arg\min_{\beta} \left\{ \sum_{i=1}^n \left( y_i - \beta_0 - X_i^{\top}\beta \right)^2 + \lambda \sum_{j=1}^p |\beta_j| \right\}
+$$
