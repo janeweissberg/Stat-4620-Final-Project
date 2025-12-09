@@ -267,3 +267,117 @@ $$
 $$
 \hat{\beta}_{\text{lasso}} = \arg\min_{\beta} \left\{ \sum_{i=1}^n \left( y_i - \beta_0 - X_i^{\top}\beta \right)^2 + \lambda \sum_{j=1}^p |\beta_j| \right\}
 $$
+
+
+## PART 3: check modeling assumptions
+
+```{r, echo= TRUE}
+## model-assumptions
+library(ggplot2)
+library(dplyr)
+
+# Fit a simple multiple linear regression model
+lm_model <- lm(ViolentCrimesPerPop ~ PctPopUnderPov + PctNotHSGrad +
+                 PctUnemployed + PctKids2Par + PctFam2Par +
+                 medIncome + perCapInc,
+               data = train)
+
+# Add fitted values and residuals
+model_data <- data.frame(
+  Fitted = fitted(lm_model),
+  Residuals = resid(lm_model)
+)
+
+# 1. Residual histogram
+hist(model_data$Residuals, breaks = 30, col = "green",
+     main = "Histogram of Residuals", xlab = "Residuals")
+
+# 2. Q–Q plot 
+qqnorm(model_data$Residuals)
+qqline(model_data$Residuals, col = "red")
+
+# 3. Residuals vs Fitted 
+plot(model_data$Fitted, model_data$Residuals,
+     col = "orange", pch = 16,
+     main = "Residuals vs Fitted Values",
+     xlab = "Fitted Values", ylab = "Residuals")
+abline(h = 0, col = "red", lwd = 2)
+
+# 4. Check for multicollinearity 
+predictors <- train %>%
+  select(PctPopUnderPov, PctNotHSGrad, PctUnemployed,
+         PctKids2Par, PctFam2Par, medIncome, perCapInc)
+cor(predictors, use = "pairwise.complete.obs")
+
+
+```
+
+Explanation for Model Assumptions Check:
+
+The histogram and Q–Q plot of residuals show that the residuals are roughly symmetric and centered around zero, suggesting they are approximately normally distributed. The residuals vs fitted plot indicates no major curvature, but the spread increases slightly with higher fitted values, meaning variance may not be perfectly constant. The correlation matrix shows some strong correlations (between medIncome and perCapInc), suggesting moderate multicollinearity. Overall, while a few assumptions are not perfectly met, the model still provides a reasonable fit for explaining how socioeconomic factors relate to violent crime rates.
+
+
+## PART 4: Ridge Regression Model Validation
+
+```{r, echo=TRUE}
+
+library(glmnet)
+
+# Load and clean datasets 
+train <- read.csv("train.csv", na.strings = "?")
+test  <- read.csv("test.csv", na.strings = "?")
+
+# Remove missing values
+train <- na.omit(train)
+test  <- na.omit(test)
+
+#  Prepare data
+formula <- as.formula("ViolentCrimesPerPop ~ .")
+
+# Create model matrices
+x_train <- model.matrix(formula, data = train)[, -1]
+y_train <- train$ViolentCrimesPerPop
+x_test  <- model.matrix(formula, data = test)[, -1]
+y_test  <- test$ViolentCrimesPerPop
+
+# Align columns between training and test matrices
+common_cols <- intersect(colnames(x_train), colnames(x_test))
+x_train <- x_train[, common_cols]
+x_test  <- x_test[, common_cols]
+
+#  Fit LASSO model 
+set.seed(123)
+lasso_mod <- cv.glmnet(x_train, y_train, alpha = 1)
+
+#  Predict on test data 
+y_pred <- predict(lasso_mod, newx = x_test, s = "lambda.min")
+
+#  Compute validation metrics 
+RMSE <- sqrt(mean((y_test - y_pred)^2))
+MAE  <- mean(abs(y_test - y_pred))
+R2   <- 1 - sum((y_test - y_pred)^2) / sum((y_test - mean(y_test))^2)
+
+# Print results
+cat("Model Validation Results (LASSO Regression):\n")
+cat("RMSE:", round(RMSE, 2), "\n")
+cat("MAE:", round(MAE, 2), "\n")
+cat("R-squared:", round(R2, 3), "\n")
+
+# Plot predicted vs actual
+plot(y_test, y_pred,
+     main = "Predicted vs Actual Violent Crime Rates (LASSO)",
+     xlab = "Actual Values",
+     ylab = "Predicted Values",
+     pch = 16, col = "blue")
+abline(0, 1, col = "red", lwd = 2)
+
+```
+
+Explanation of Model Validation (LASSO Regression):
+
+The LASSO model performs very well, with an $R^2$ of 0.999, meaning it explains almost all the variation in violent crime rates.
+The RMSE (19.48) and MAE (15.54) are small, showing that prediction errors are low.
+The plot of predicted vs actual values shows points closely following the red line, confirming that the model’s predictions are highly accurate and consistent.
+
+
+
