@@ -314,7 +314,10 @@ cor(predictors, use = "pairwise.complete.obs")
 
 Explanation for Model Assumptions Check:
 
-The histogram and Q–Q plot of residuals show that the residuals are roughly symmetric and centered around zero, suggesting they are approximately normally distributed. The residuals vs fitted plot indicates no major curvature, but the spread increases slightly with higher fitted values, meaning variance may not be perfectly constant. The correlation matrix shows some strong correlations (between medIncome and perCapInc), suggesting moderate multicollinearity. Overall, while a few assumptions are not perfectly met, the model still provides a reasonable fit for explaining how socioeconomic factors relate to violent crime rates.
+The histogram and Q–Q plot of residuals show that the residuals are roughly symmetric and centered around zero, suggesting they are approximately normally distributed.
+The residuals vs fitted plot indicates no major curvature, but the spread increases slightly with higher fitted values, meaning variance may not be perfectly constant.
+The correlation matrix shows some strong correlations (between medIncome and perCapInc), suggesting moderate multicollinearity. Overall, while a few assumptions are not
+perfectly met, the model still provides a reasonable fit for explaining how socioeconomic factors relate to violent crime rates.
 
 
 ## PART 4: Ridge Regression Model Validation
